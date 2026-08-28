@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Website Security Analysis LPU</title>
+    <script>
+      (function() {
+        try {
+          var originalFetch = (typeof window !== 'undefined' && window.fetch) || 
+                              (typeof globalThis !== 'undefined' && globalThis.fetch) || 
+                              (typeof self !== 'undefined' && self.fetch);
+          
+          var fetchRef = originalFetch ? originalFetch.bind(window) : function() { return Promise.reject(new Error("fetch not supported")); };
+
+          function getFetch() { return fetchRef; }
+          function setFetch(val) { fetchRef = typeof val === 'function' ? val.bind(window) : val; }
+
+          var targets = [
+            typeof window !== 'undefined' ? window : null,
+            typeof globalThis !== 'undefined' ? globalThis : null,
+            typeof self !== 'undefined' ? self : null,
+            typeof Window !== 'undefined' && Window.prototype ? Window.prototype : null
+          ];
+
+          for (var i = 0; i < targets.length; i++) {
+            var target = targets[i];
+            if (!target) continue;
+            try {
+              Object.defineProperty(target, 'fetch', {
+                get: getFetch,
+                set: setFetch,
+                configurable: true,
+                enumerable: true
+              });
+            } catch (err) {
+              try {
+                target.fetch = fetchRef;
+              } catch (e2) {}
+            }
+          }
+        } catch (e) {
+          console.warn('Fetch property patch failed:', e);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+

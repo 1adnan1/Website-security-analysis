@@ -1,0 +1,10 @@
+services:
+  secure-check-lpu:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET:-security-analysis-default-key-change-me}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    restart: always
